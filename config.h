@@ -24,6 +24,27 @@ static const char *colors[][3]      = {
 	[SchemeSel]  = { col_gray4, col_cyan,  col_cyan  },
 };
 
+const char scratchpadname[] = "scratchpad";
+const char *scratchpadcmd[] = { "st", "-t", scratchpadname, NULL };
+const char *alsamixercmd[] = { "st","-t", scratchpadname, "alsamixer", NULL };
+const char *snclicmd[] = { "st", "-t", scratchpadname, "sncli", NULL };
+const char *nmtuicmd[] = { "st", "-t", scratchpadname,  "nmtui", NULL };
+
+
+
+typedef struct {
+	const char *name;
+	const void *cmd;
+} Sp;
+
+static Sp scratchpads[] = {
+	/* name 	cmd */
+	{"spterm",	scratchpadcmd },
+	{"spmixer",	alsamixercmd  },
+	{"spsncli",	snclicmd      },
+	{"spnmtui",	nmtuicmd      },
+};
+
 /* tagging */
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
@@ -35,7 +56,10 @@ static const Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating   monitor */
 	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
 	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
-	{ "Alacritty",NULL,	  NULL,	      0,	    1,		 -1 },
+	{ NULL,	      "spterm",   NULL,	      SPTAG(0),     1,           -1 },	
+	{ NULL,	      "spmixer",  NULL,	      SPTAG(1),     1,           -1 },	
+	{ NULL,	      "spsncli",  NULL,	      SPTAG(2),     1,           -1 },	
+	{ NULL,	      "spnmtui",  NULL,	      SPTAG(3),     1,           -1 },	
 };
 
 /* layout(s) */
@@ -70,22 +94,17 @@ static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() 
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
 static const char *termcmd[]  = { "st", NULL };
 static const char *browser[] = { "brave", NULL };
-static const char scratchpadname[] = "scratchpad";
-static const char *scratchpadcmd[] = { "st", "-t", scratchpadname, NULL };
-static const char *alsamixercmd[] = { "st","-t", scratchpadname, "alsamixer", NULL };
-static const char *snclicmd[] = { "st", "-t", scratchpadname, "sncli", NULL };
-static const char *nmtuicmd[] = { "st", "-t", scratchpadname,  "nmtui", NULL };
 static const char *flameshotgui[] = { "flameshot", "gui", NULL };
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
-	{ MODKEY, 			XK_v,	   spawn,          {.v = alsamixercmd } },
-	{ MODKEY|ShiftMask,	        XK_w,      spawn,	   {.v = nmtuicmd } },
 	{ MODKEY,			XK_w,	   spawn,	   {.v = browser } },
 	{ MODKEY,                       XK_d,      spawn,          {.v = dmenucmd } },
 	{ MODKEY,            	        XK_Return, spawn,          {.v = termcmd } },
-	{ MODKEY|ShiftMask,             XK_Return, spawn, 	   {.v = scratchpadcmd } },
-	{ MODKEY,			XK_s,      spawn,	   {.v = snclicmd } },
+	{ MODKEY|ShiftMask,             XK_Return, togglescratch,  {.ui = 0 } },
+	{ MODKEY, 			XK_v,	   togglescratch,  {.ui = 1 } },
+	{ MODKEY,			XK_s,      togglescratch,  {.ui = 2 } },
+	{ MODKEY|ShiftMask,	        XK_w,      togglescratch,  {.ui = 3 } },
 	{ MODKEY|ShiftMask,		XK_s,      spawn,	   {.v = flameshotgui } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
