@@ -3,16 +3,20 @@
 /* appearance */
 static const unsigned int borderpx  = 2;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
+static const unsigned int gappih = 20;
+static const unsigned int gappiv = 10;
+static const unsigned int gappoh = 10;
+static const unsigned int gappov = 30;
+static int smartgaps = 0;
 static const unsigned int systraypinning = 0;   /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X */
-static const int startwithgaps	     = 1;	 /* 1 means gaps are used by default */
-static const unsigned int gappx     = 10;       /* default gap between windows in pixels */ static const unsigned int systrayonleft = 0;   	/* 0: systray in the right corner, >0: systray on left of status text */
 static const unsigned int systrayspacing = 2;   /* systray spacing */
 static const int systraypinningfailfirst = 1;   /* 1: if pinning fails, display systray on the first monitor, False: display systray on the last monitor*/
+static const int systrayonleft = 0;
 static const int showsystray        = 1;     /* 0 means no systray */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
-static const char *fonts[]          = { "JetBrains Mono:size=10" };
-static const char dmenufont[]       = "JetBrains Mono:size=10";
+static const char *fonts[]          = { "JetBrains Mono:size=12" };
+static const char dmenufont[]       = "JetBrains Mono:size=12";
 static const char col_gray1[]       = "#282c34";
 static const char col_gray2[]       = "#282c34";
 static const char col_gray3[]       = "#ffffff";
@@ -68,14 +72,26 @@ static const int nmaster     = 1;    /* number of clients in master area */
 static const int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
 static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
 
-#include "fibonacci.c"
+#define FORCE_VSPLIT 1  /* nrowgrid layout: force two clients to always split vertically */
+#include "vanitygaps.c"
+
 static const Layout layouts[] = {
 	/* symbol     arrange function */
 	{ "[]=",      tile },    /* first entry is default */
-	{ "><>",      NULL },    /* no layout function means floating behavior */
 	{ "[M]",      monocle },
- 	{ "[@]",      spiral },
- 	{ "[\\]",      dwindle },
+	{ "[@]",      spiral },
+	{ "[\\]",     dwindle },
+	{ "H[]",      deck },
+	{ "TTT",      bstack },
+	{ "===",      bstackhoriz },
+	{ "HHH",      grid },
+	{ "###",      nrowgrid },
+	{ "---",      horizgrid },
+	{ ":::",      gaplessgrid },
+	{ "|M|",      centeredmaster },
+	{ ">M>",      centeredfloatingmaster },
+	{ "><>",      NULL },    /* no layout function means floating behavior */
+	{ NULL,       NULL },
 };
 
 /* key definitions */
@@ -95,17 +111,19 @@ static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont,
 static const char *termcmd[]  = { "st", NULL };
 static const char *browser[] = { "brave", NULL };
 static const char *flameshotgui[] = { "flameshot", "gui", NULL };
+static const char *rangercmd[] = {"st", "-e", "ranger", NULL };
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
-	{ MODKEY,			XK_w,	   spawn,	   {.v = browser } },
+	{ MODKEY,			            XK_r,	   spawn,	       {.v = rangercmd } }, 
+	{ MODKEY,			            XK_w,	   spawn,	       {.v = browser } },
 	{ MODKEY,                       XK_d,      spawn,          {.v = dmenucmd } },
 	{ MODKEY,            	        XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY|ShiftMask,             XK_Return, togglescratch,  {.ui = 0 } },
-	{ MODKEY, 			XK_v,	   togglescratch,  {.ui = 1 } },
-	{ MODKEY,			XK_s,      togglescratch,  {.ui = 2 } },
-	{ MODKEY|ShiftMask,	        XK_w,      togglescratch,  {.ui = 3 } },
-	{ MODKEY|ShiftMask,		XK_s,      spawn,	   {.v = flameshotgui } },
+	{ MODKEY, 			            XK_v,	   togglescratch,  {.ui = 1 } },
+	{ MODKEY,			            XK_s,      togglescratch,  {.ui = 2 } },
+	{ MODKEY|ShiftMask,	            XK_w,      togglescratch,  {.ui = 3 } },
+	{ MODKEY|ShiftMask,		        XK_s,      spawn,	       {.v = flameshotgui } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
@@ -115,25 +133,34 @@ static Key keys[] = {
 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
 /*	{ MODKEY,                       XK_Return, zoom,           {0} }, */
 	{ MODKEY,                       XK_Tab,    view,           {0} },
-	{ MODKEY,	                XK_q,      killclient,     {0} },
+	{ MODKEY,	                    XK_q,      killclient,     {0} },
 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
-	{ MODKEY|ShiftMask,             XK_f,      setlayout,      {.v = &layouts[1]} },
-	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
-	{ MODKEY,                       XK_y,      setlayout,      {.v = &layouts[3]} },
-	{ MODKEY|ShiftMask,             XK_y,      setlayout,      {.v = &layouts[4]} },
+	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[1]} },
+	{ MODKEY,                       XK_y,      setlayout,      {.v = &layouts[2]} },
+	{ MODKEY|ShiftMask,             XK_y,      setlayout,      {.v = &layouts[3]} },
+	{ MODKEY,                       XK_u,      setlayout,      {.v = &layouts[4]} },
+	{ MODKEY|ShiftMask,             XK_t,      setlayout,      {.v = &layouts[5]} },
+	{ MODKEY|ShiftMask,             XK_u,      setlayout,      {.v = &layouts[6]} },
+	{ MODKEY|ShiftMask,             XK_m,      setlayout,      {.v = &layouts[7]} },
+	{ MODKEY,                       XK_n,      setlayout,      {.v = &layouts[8]} },
+	{ MODKEY|ShiftMask,             XK_n,      setlayout,      {.v = &layouts[9]} },
+	{ MODKEY,                       XK_i,      setlayout,      {.v = &layouts[10]} },
+	{ MODKEY|ShiftMask,             XK_i,      setlayout,      {.v = &layouts[11]} },
+	{ MODKEY|ShiftMask,             XK_r,      setlayout,      {.v = &layouts[12]} },
+	{ MODKEY|ShiftMask,             XK_f,      setlayout,      {.v = &layouts[13]} },
+    { MODKEY,                       XK_a,      togglegaps,     {0} },
+    { MODKEY|ShiftMask,             XK_a,      defaultgaps,    {0} },
+    { MODKEY|ShiftMask,             XK_z,      incrgaps,       {.i = -5} },
+    { MODKEY,                       XK_z,      incrgaps,       {.i = +5} },
 	{ MODKEY,                       XK_space,  setlayout,      {0} },
 	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
-	{ MODKEY,	                XK_f,      togglefullscr,  {0} },
+	{ MODKEY,	                    XK_f,      togglefullscr,  {0} },
 	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
 	{ MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~0 } },
 	{ MODKEY,                       XK_comma,  focusmon,       {.i = -1 } },
 	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } },
 	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
-	{ MODKEY,                       XK_minus,  setgaps,        {.i = -5 } },
-	{ MODKEY,                       XK_equal,  setgaps,        {.i = +5 } },
-	{ MODKEY|ShiftMask,             XK_minus,  setgaps,        {.i = GAP_RESET } },
-	{ MODKEY|ShiftMask,             XK_equal,  setgaps,        {.i = GAP_TOGGLE} },
 	TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
 	TAGKEYS(                        XK_3,                      2)
