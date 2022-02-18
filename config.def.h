@@ -113,6 +113,7 @@ static const char *browser[] = { "brave", NULL };
 static const char *flameshotgui[] = { "flameshot", "gui", NULL };
 static const char *rangercmd[] = {"st", "-e", "ranger", NULL };
 
+#include "movestack.c"
 static Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ MODKEY,			            XK_r,	   spawn,	       {.v = rangercmd } }, 
