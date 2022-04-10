@@ -18,11 +18,11 @@ static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
 static const char *fonts[]          = { "JetBrains Mono:size=12" };
 static const char dmenufont[]       = "JetBrains Mono:size=12";
-static const char col_gray1[]       = "#e5e9f0";//"#282c34";
+static const char col_gray1[]       = "#2e3440";//"#e5e9f0";//"#282c34";
 static const char col_gray2[]       = "#839496";//"#282c34";
-static const char col_gray3[]       = "#434c5e";
-static const char col_gray4[]       = "#3b4252";
-static const char col_cyan[]        = "#d8dee9";//"#e06c75";
+static const char col_gray3[]       = "#eceff4";
+static const char col_gray4[]       = "#eceff4";
+static const char col_cyan[]        = "#5e81ac";//"#d8dee9";//"#e06c75";
 static const char *colors[][3]      = {
 	/*               fg         bg         border   */
 	[SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
@@ -113,6 +113,7 @@ static const char *termcmd[]  = { "st", NULL };
 static const char *browser[] = { "brave", NULL };
 static const char *flameshotgui[] = { "flameshot", "gui", NULL };
 static const char *rangercmd[] = {"st", "-e", "ranger", NULL };
+static const char *pcmanfm[] = {"pcmanfm", NULL };
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
@@ -149,7 +150,7 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_n,      setlayout,      {.v = &layouts[9]} },
 	{ MODKEY,                       XK_i,      setlayout,      {.v = &layouts[10]} },
 	{ MODKEY|ShiftMask,             XK_i,      setlayout,      {.v = &layouts[11]} },
-	{ MODKEY|ShiftMask,             XK_r,      setlayout,      {.v = &layouts[12]} },
+	{ MODKEY|ShiftMask,             XK_r,      spawn,          {.v = pcmanfm     } },
 	{ MODKEY|ShiftMask,             XK_f,      setlayout,      {.v = &layouts[13]} },
     { MODKEY,                       XK_a,      togglegaps,     {0} },
     { MODKEY|ShiftMask,             XK_a,      defaultgaps,    {0} },
