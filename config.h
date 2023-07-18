@@ -1,23 +1,26 @@
-
 /* See LICENSE file for copyright and license details. */
 
 /* appearance */
-static const unsigned int borderpx  = 1;        /* border pixel of windows */
+static const unsigned int borderpx  = 2;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
-static const unsigned int systraypinning = 0;   /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X */
-static const unsigned int systrayonleft = 0;    /* 0: systray in the right corner, >0: systray on left of status text */
-static const unsigned int systrayspacing = 2;   /* systray spacing */
-static const int systraypinningfailfirst = 1;   /* 1: if pinning fails, display systray on the first monitor, False: display systray on the last monitor*/
-static const int showsystray        = 1;        /* 0 means no systray */
+static const unsigned int systraypinning = 0;   /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X*/
+static const unsigned int systrayonleft = 0;
+static const unsigned int systrayspacing = 2;
+static const int systraypinningfailfirst = 1;
+static const int showsystray = 1;
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
+static const int usealtbar 	    = 0;        /* 1 means use non-dwm status bar */
+static const char *altbarclass      = "Polybar";/* Alternate bar class name */
+static const char *alttrayname      = "tray";   /* Polybar tray instance name */
+static const char *altbarcmd        = "~/.config/polybar/launch.sh";/* Alternate bar launch command */
 static const char *fonts[]          = { "JetBrains Mono:size=10" };
 static const char dmenufont[]       = "JetBrains Mono:size=10";
-static const char col_gray1[]       = "#222222";
-static const char col_gray2[]       = "#444444";
-static const char col_gray3[]       = "#bbbbbb";
-static const char col_gray4[]       = "#eeeeee";
-static const char col_cyan[]        = "#005577";
+static const char col_gray1[]       = "#2e3440";
+static const char col_gray2[]       = "#3b4252";
+static const char col_gray3[]       = "#d8dee9";
+static const char col_gray4[]       = "#eceff4";
+static const char col_cyan[]        = "#5e81ac";
 static const char *colors[][3]      = {
 	/*               fg         bg         border   */
 	[SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
@@ -40,7 +43,7 @@ static const Rule rules[] = {
 /* layout(s) */
 static const float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
 static const int nmaster     = 1;    /* number of clients in master area */
-static const int resizehints = 1;    /* 1 means respect size hints in tiled resizals */
+static const int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
 static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
 
 static const Layout layouts[] = {
@@ -63,10 +66,17 @@ static const Layout layouts[] = {
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
 
 /* commands */
+//static const char *accessBankVpnAddress = "vpn.accessbank.az"
+//static const char *accessBankVpnPass = "
+
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
 static const char *termcmd[]  = { "st", NULL };
 static const char *browser[]  = { "firefox", NULL };
+static const char *screenshot[] = { "flameshot", "gui", NULL };
+static const char *androidstudio[] = { "android-studio", NULL };
+static const char *guifm[] = { "pcmanfm", NULL };
+
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
@@ -95,9 +105,22 @@ static const Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
 
 	/* custom keys */
+	{ MODKEY,			XK_p,	   spawn,	   SHCMD("sh ~/scripts/init.sh | dunstify -h string:x-dunst-stack-tag:\"init\" --timeout=1000 \"running init.sh\"") },	
 	{ MODKEY, 			XK_w,	   spawn,	   {.v = browser } },
+	{ MODKEY,			XK_a,	   spawn,	   {.v = androidstudio } },
+	{ MODKEY|ShiftMask,		XK_w,	   spawn,	   SHCMD("st -e nmtui") },
 	{ MODKEY, 			XK_f,	   togglefullscr,  {0} },
 	{ MODKEY, 			XK_u,	   setlayout,      {.v = &layouts[3]} },
+	{ MODKEY|ShiftMask,		XK_r,	   spawn,      	   {.v = guifm } },
+	{ MODKEY,	                XK_Up,     spawn,	   SHCMD("amixer set Master 2%+ | dunstify -h string:x-dunst-stack-tag:\"vol\" --timeout=1000 \"Volume: $(amixer sget Master | tail -1 | awk '{print $5}' | sed 's@\\(\\[\\|\\]\\)@@g')\"") },
+	{ MODKEY,	                XK_Down,   spawn,	   SHCMD("amixer set Master 2%- | dunstify -h string:x-dunst-stack-tag:\"vol\" --timeout=1000 \"Volume: $(amixer sget Master | tail -1 | awk '{print $5}' | sed 's@\\(\\[\\|\\]\\)@@g')\"") },
+	{ MODKEY|ShiftMask,             XK_Up,     spawn,	   SHCMD("amixer set Capture 2%+ | dunstify -h string:x-dunst-stack-tag:\"vol\" --timeout=1000 \"Microphone: $(amixer sget Capture | tail -1 | awk '{print $5}' | sed 's@\\(\\[\\|\\]\\)@@g')\"") },
+	{ MODKEY|ShiftMask,	        XK_Down,   spawn,	   SHCMD("amixer set Capture 2%- | dunstify -h string:x-dunst-stack-tag:\"vol\" --timeout=1000 \"Microphone: $(amixer sget Capture | tail -1 | awk '{print $5}' | sed 's@\\(\\[\\|\\]\\)@@g')\"")},
+	{ MODKEY,			XK_Left,   spawn,	   SHCMD("light -U 10 | dunstify -h string:x-dunst-stack-tag:\"bright\" --timeout=1000 \"Brightness: $(light | cut -d. -f1)%\"") },
+	{ MODKEY,			XK_Right,  spawn,	   SHCMD("light -A 10 | dunstify -h string:x-dunst-stack-tag:\"bright\" --timeout=1000 \"Brightness: $(light | cut -d. -f1)%\"") },
+	{ MODKEY|ShiftMask,	        XK_s,      spawn,	   {.v = screenshot } },
+	{ MODKEY,			XK_v,	   spawn,	   SHCMD("cat ~/constants/ACCESS_VPN | xclip -selection clipboard | dunstify \"AccessBankVPN pass copied to clipboard\"") },
+
 	/* tag keys */
 	TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
@@ -116,7 +139,7 @@ static const Key keys[] = {
 /* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
 static const Button buttons[] = {
 	/* click                event mask      button          function        argument */
-	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
+	{ ClkTagBar,            MODKEY,         Button1,        tag,	        {0} },
 	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
 	{ ClkWinTitle,          0,              Button2,        zoom,           {0} },
 	{ ClkStatusText,        0,              Button2,        spawn,          {.v = termcmd } },
@@ -127,23 +150,5 @@ static const Button buttons[] = {
 	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
 	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
 	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
-};
-
-static const char *ipcsockpath = "/tmp/dwm.sock";
-static IPCCommand ipccommands[] = {
-  IPCCOMMAND(  view,                1,      {ARG_TYPE_UINT}   ),
-  IPCCOMMAND(  toggleview,          1,      {ARG_TYPE_UINT}   ),
-  IPCCOMMAND(  tag,                 1,      {ARG_TYPE_UINT}   ),
-  IPCCOMMAND(  toggletag,           1,      {ARG_TYPE_UINT}   ),
-  IPCCOMMAND(  tagmon,              1,      {ARG_TYPE_UINT}   ),
-  IPCCOMMAND(  focusmon,            1,      {ARG_TYPE_SINT}   ),
-  IPCCOMMAND(  focusstack,          1,      {ARG_TYPE_SINT}   ),
-  IPCCOMMAND(  zoom,                1,      {ARG_TYPE_NONE}   ),
-  IPCCOMMAND(  incnmaster,          1,      {ARG_TYPE_SINT}   ),
-  IPCCOMMAND(  killclient,          1,      {ARG_TYPE_SINT}   ),
-  IPCCOMMAND(  togglefloating,      1,      {ARG_TYPE_NONE}   ),
-  IPCCOMMAND(  setmfact,            1,      {ARG_TYPE_FLOAT}  ),
-  IPCCOMMAND(  setlayoutsafe,       1,      {ARG_TYPE_PTR}    ),
-  IPCCOMMAND(  quit,                1,      {ARG_TYPE_NONE}   )
 };
 
